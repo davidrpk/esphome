@@ -18,13 +18,32 @@ void AXP192Component::setup()
 
 void AXP192Component::update()
 {
-  float vbat = GetBatVoltage();
-  ESP_LOGD(TAG, "Got Battery Level=%f V", vbat);
+  if (this->battery_voltage_sensor_ != nullptr)
+  {
+    float battery_voltage_v = GetBatVoltage();
+    ESP_LOGD(TAG, "Got Battery Voltage=%f V", battery_voltage_v);
+    this->battery_voltage_sensor_->publish_state(battery_voltage_v);
+  }
+  if (this->internal_temperature_sensor_ != nullptr)
+  {
+    float internal_temperature_c = GetTempInAXP192();
+    ESP_LOGD(TAG, "Got Internal Temperature=%f C", internal_temperature_c);
+    this->internal_temperature_sensor_->publish_state(internal_temperature_c);
+  }
 }
 void AXP192Component::dump_config()
 {
   ESP_LOGCONFIG(TAG, "AXP192:");
   LOG_I2C_DEVICE(this);
+
+  if (this->is_failed()) {
+    ESP_LOGE(TAG, "Communication with AXP192 failed!");
+    return;
+  }
+  LOG_UPDATE_INTERVAL(this);
+
+  LOG_SENSOR("  ", "Battery Voltage", this->battery_voltage_sensor_);
+  LOG_SENSOR("  ", "Internal Temperature", this->internal_temperature_sensor_);
 }
 
 float AXP192Component::get_setup_priority() const { return setup_priority::DATA; }

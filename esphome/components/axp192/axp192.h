@@ -53,6 +53,9 @@ public:
   float get_setup_priority() const override;
   void update() override;
 
+  void set_battery_voltage_sensor(sensor::Sensor *battery_voltage_sensor) { battery_voltage_sensor_ = battery_voltage_sensor; }
+  void set_internal_temperature_sensor(sensor::Sensor *internal_temperature_sensor) {internal_temperature_sensor_ = internal_temperature_sensor; }
+
   	void  begin(mbus_mode_t mode = kMBusModeOutput);
 	void  ScreenBreath(uint8_t brightness);
 	bool  GetBatState();
@@ -108,6 +111,10 @@ public:
     void SetLed(uint8_t state);
     void SetSpkEnable(uint8_t state);
     void SetCHGCurrent(uint8_t state);
+
+protected:
+	sensor::Sensor *battery_voltage_sensor_{nullptr};
+	sensor::Sensor *internal_temperature_sensor_{nullptr};
 
 private:
 	uint8_t Read8bit( uint8_t Addr );
