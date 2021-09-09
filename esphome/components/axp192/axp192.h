@@ -16,6 +16,10 @@ namespace axp192 {
 
 #define PowerOff(x) SetSleep(x)
 
+enum AXP192Model {
+	M5CORE2 = 0,
+};
+
 
 typedef enum                 
 {
@@ -26,6 +30,15 @@ typedef enum
 
 class AXP192Component : public PollingComponent, public i2c::I2CDevice {
 public:
+
+	void set_model(AXP192Model model) { this->model_ = model;}
+
+
+	virtual void initialize() = 0;
+	void setup() override {
+		//this->setup_pins_();
+		this->initialize();
+	}
 
     enum CHGCurrent{
         kCHG_100mA = 0,
@@ -48,7 +61,6 @@ public:
 
   	AXP192Component();
 
-  void setup() override;
   void dump_config() override;
   float get_setup_priority() const override;
   void update() override;
@@ -56,7 +68,6 @@ public:
   void set_battery_voltage_sensor(sensor::Sensor *battery_voltage_sensor) { battery_voltage_sensor_ = battery_voltage_sensor; }
   void set_internal_temperature_sensor(sensor::Sensor *internal_temperature_sensor) {internal_temperature_sensor_ = internal_temperature_sensor; }
 
-  	void  begin(mbus_mode_t mode = kMBusModeOutput);
 	void  ScreenBreath(uint8_t brightness);
 	bool  GetBatState();
   
@@ -115,16 +126,23 @@ public:
 protected:
 	sensor::Sensor *battery_voltage_sensor_{nullptr};
 	sensor::Sensor *internal_temperature_sensor_{nullptr};
+	AXP192Model model_;
 
-private:
 	uint8_t Read8bit( uint8_t Addr );
 	uint16_t Read12Bit( uint8_t Addr);
 	uint16_t Read13Bit( uint8_t Addr);
 	uint16_t Read16bit( uint8_t Addr );
 	uint32_t Read24bit( uint8_t Addr );
 	uint32_t Read32bit( uint8_t Addr );
+
+
 }; 
 
+//-----------   M5Stack Core2 --------------
+class AXP192M5Core2 : public AXP192Component {
+ public:
+  void initialize() override;
+};
 
 }  // axp192
 }  // namespace esphome

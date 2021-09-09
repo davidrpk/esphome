@@ -3,6 +3,7 @@ import esphome.config_validation as cv
 from esphome.components import i2c, sensor
 from esphome.const import (
     CONF_ID,
+    CONF_MODEL,
     CONF_BATTERY_VOLTAGE,
     CONF_TEMPERATURE,
     UNIT_CELSIUS,
@@ -15,14 +16,23 @@ DEPENDENCIES = ["i2c"]
 
 axp192_ns = cg.esphome_ns.namespace("axp192")
 
-AXP192Component = axp192_ns.class_(
-    "AXP192Component", cg.PollingComponent, i2c.I2CDevice
-)
+axp192 = axp192_ns.class_("AXP192Component", cg.PollingComponent, i2c.I2CDevice)
+
+AXP192M5Core2 = axp192_ns.class_("AXP192M5Core2", axp192)
+
+AXP192Model = axp192_ns.enum("AXP192Model")
+
+MODELS = {
+    "M5CORE2": AXP192Model.M5CORE2,
+}
+
+AXP192_MODEL = cv.enum(MODELS, upper=True, space="_")
 
 CONFIG_SCHEMA = (
     cv.Schema(
         {
-            cv.GenerateID(): cv.declare_id(AXP192Component),
+            cv.GenerateID(): cv.declare_id(axp192),
+            cv.Required(CONF_MODEL): AXP192_MODEL,
             cv.Optional(CONF_BATTERY_VOLTAGE): sensor.sensor_schema(
                 unit_of_measurement=UNIT_VOLT,
                 icon=ICON_BATTERY,
@@ -41,7 +51,11 @@ CONFIG_SCHEMA = (
 
 
 async def to_code(config):
-    var = cg.new_Pvariable(config[CONF_ID])
+    if config[CONF_MODEL] == "M5CORE2":
+        axp192_type = AXP192M5Core2
+    rhs = axp192_type.new()
+    var = cg.Pvariable(config[CONF_ID], rhs)
+
     await cg.register_component(var, config)
     await i2c.register_i2c_device(var, config)
 

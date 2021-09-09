@@ -10,12 +10,6 @@ AXP192Component::AXP192Component()
 {
 }
 
-void AXP192Component::setup()
-{
-  ESP_LOGD(TAG, "Starting up..");
-  begin();
-}
-
 void AXP192Component::update()
 {
   if (this->battery_voltage_sensor_ != nullptr)
@@ -48,66 +42,6 @@ void AXP192Component::dump_config()
 
 float AXP192Component::get_setup_priority() const { return setup_priority::DATA; }
 
-void AXP192Component::begin(mbus_mode_t mode)
-{
-    ESP_LOGD(TAG, "Beginning..");
-    //Wire1.begin(21, 22);
-    //Wire1.setClock(400000);
-
-    //AXP192 30H
-    write_byte(0x30, (Read8bit(0x30) & 0x04) | 0X02);
-    ESP_LOGD(TAG,"axp: vbus limit off\n");
-
-    //AXP192 GPIO1:OD OUTPUT
-    write_byte(0x92, Read8bit(0x92) & 0xf8);
-    ESP_LOGD(TAG,"axp: gpio1 init\n");
-
-    //AXP192 GPIO2:OD OUTPUT
-    write_byte(0x93, Read8bit(0x93) & 0xf8);
-    ESP_LOGD(TAG,"axp: gpio2 init\n");
-
-    //AXP192 RTC CHG
-    write_byte(0x35, (Read8bit(0x35) & 0x1c) | 0xa2);
-    ESP_LOGD(TAG,"axp: rtc battery charging enabled\n");
-
-    SetESPVoltage(3350);
-    ESP_LOGD(TAG,"axp: esp32 power voltage was set to 3.35v\n");
-
-    SetLcdVoltage(2800);
-    ESP_LOGD(TAG,"axp: lcd backlight voltage was set to 2.80v\n");
-
-    SetLDOVoltage(2, 3300); //Periph power voltage preset (LCD_logic, SD card)
-    ESP_LOGD(TAG,"axp: lcd logic and sdcard voltage preset to 3.3v\n");
-
-    SetLDOVoltage(3, 2000); //Vibrator power voltage preset
-    ESP_LOGD(TAG,"axp: vibrator voltage preset to 2v\n");
-
-    SetLDOEnable(2, true);
-    SetDCDC3(true); // LCD backlight
-    SetLed(true);
-
-    SetCHGCurrent(kCHG_100mA);
-    //SetAxpPriphPower(1);
-    //ESP_LOGD(TAG,"axp: lcd_logic and sdcard power enabled\n\n");
-
-    //pinMode(39, INPUT_PULLUP);
-
-    //AXP192 GPIO4
-    write_byte(0X95, (Read8bit(0x95) & 0x72) | 0X84);
-
-    write_byte(0X36, 0X4C);
-
-    write_byte(0x82,0xff);
-
-    SetLCDRSet(0);
-    delay(100);
-    SetLCDRSet(1);
-    delay(100);
-    // I2C_WriteByteDataAt(0X15,0XFE,0XFF);
-
-    //  bus power mode_output
-    SetBusPowerMode(mode);
-}
 
 uint8_t AXP192Component::Read8bit(uint8_t Addr)
 {
@@ -628,6 +562,69 @@ void AXP192Component::SetCHGCurrent(uint8_t state)
     data = data | ( state & 0x0f );
     write_byte(0x33,data);
 }
+
+void AXP192M5Core2::initialize() {
+    //Specfic init for M5Core2
+    ESP_LOGD(TAG, "Beginning..");
+    //Wire1.begin(21, 22);
+    //Wire1.setClock(400000);
+
+    //AXP192 30H
+    write_byte(0x30, (Read8bit(0x30) & 0x04) | 0X02);
+    ESP_LOGD(TAG,"axp: vbus limit off\n");
+
+    //AXP192 GPIO1:OD OUTPUT
+    write_byte(0x92, Read8bit(0x92) & 0xf8);
+    ESP_LOGD(TAG,"axp: gpio1 init\n");
+
+    //AXP192 GPIO2:OD OUTPUT
+    write_byte(0x93, Read8bit(0x93) & 0xf8);
+    ESP_LOGD(TAG,"axp: gpio2 init\n");
+
+    //AXP192 RTC CHG
+    write_byte(0x35, (Read8bit(0x35) & 0x1c) | 0xa2);
+    ESP_LOGD(TAG,"axp: rtc battery charging enabled\n");
+
+    SetESPVoltage(3350);
+    ESP_LOGD(TAG,"axp: esp32 power voltage was set to 3.35v\n");
+
+    SetLcdVoltage(2800);
+    ESP_LOGD(TAG,"axp: lcd backlight voltage was set to 2.80v\n");
+
+    SetLDOVoltage(2, 3300); //Periph power voltage preset (LCD_logic, SD card)
+    ESP_LOGD(TAG,"axp: lcd logic and sdcard voltage preset to 3.3v\n");
+
+    SetLDOVoltage(3, 2000); //Vibrator power voltage preset
+    ESP_LOGD(TAG,"axp: vibrator voltage preset to 2v\n");
+
+    SetLDOEnable(2, true);
+    SetDCDC3(true); // LCD backlight
+    SetLed(true);
+
+    SetCHGCurrent(kCHG_100mA);
+    //SetAxpPriphPower(1);
+    //ESP_LOGD(TAG,"axp: lcd_logic and sdcard power enabled\n\n");
+
+    //pinMode(39, INPUT_PULLUP);
+
+    //AXP192 GPIO4
+    write_byte(0X95, (Read8bit(0x95) & 0x72) | 0X84);
+
+    write_byte(0X36, 0X4C);
+
+    write_byte(0x82,0xff);
+
+    SetLCDRSet(0);
+    delay(100);
+    SetLCDRSet(1);
+    delay(100);
+    // I2C_WriteByteDataAt(0X15,0XFE,0XFF);
+
+    //  bus power mode_output
+    SetBusPowerMode(kMBusModeOutput);
+}
+
+
 
 
 }}
