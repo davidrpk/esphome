@@ -4,6 +4,8 @@
 #include "esphome/components/sensor/sensor.h"
 #include "esphome/components/i2c/i2c.h"
 
+#include "axp192_registers.h"
+
 namespace esphome {
 namespace axp192 {
 
@@ -12,7 +14,7 @@ namespace axp192 {
 #define SLEEP_MIN(us)  (((uint64_t)us) * 60L * 1000000L)
 #define SLEEP_HR(us)   (((uint64_t)us) * 60L * 60L * 1000000L)
 
-#define AXP_ADDR 0X34
+
 
 #define PowerOff(x) SetSleep(x)
 
